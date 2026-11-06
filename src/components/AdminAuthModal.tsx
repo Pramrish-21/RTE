@@ -51,31 +51,31 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[92vh] flex flex-col border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-slate-950 via-purple-950 to-slate-900 text-white flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-slate-950 via-purple-950 to-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-400/30 flex items-center justify-center text-purple-300">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-600/30 border border-purple-400/30 flex items-center justify-center text-purple-300 shrink-0">
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold">Admin Portal Authorization</h3>
-              <p className="text-xs text-purple-200">
+              <h3 className="text-sm sm:text-base font-bold leading-tight">Admin Portal Authorization</h3>
+              <p className="text-[11px] sm:text-xs text-purple-200">
                 Restricted Executive Access • RTE Secretariat
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Security Warning Notice */}
-        <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 text-[11px] text-slate-600 flex items-start gap-2">
+        <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-50 border-b border-slate-200 text-[11px] text-slate-600 flex items-start gap-2 shrink-0">
           <ShieldAlert className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
           <p>
             Public admin self-registration is strictly disabled. Administrative accounts require authorization in the Supabase{' '}
@@ -84,7 +84,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {errorMsg && (
             <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-semibold leading-relaxed">
               {errorMsg}

@@ -288,16 +288,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => handleExportCsv()}
-            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/20 flex items-center gap-2 transition-colors"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition-colors min-h-[44px]"
           >
             <Download className="w-4 h-4" /> Export All Attendees (CSV)
           </button>
           <button
             onClick={onOpenSupabaseModal}
-            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-xs flex items-center gap-1.5"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-xs flex items-center justify-center gap-1.5 min-h-[44px]"
           >
             <Layers className="w-4 h-4 text-emerald-400" /> Database & RLS
           </button>
@@ -305,7 +305,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 pb-3 overflow-x-auto text-xs font-bold">
+      <div className="flex items-center gap-1.5 border-b border-slate-200 pb-3 overflow-x-auto no-scrollbar touch-pan-x text-xs font-bold">
         {[
           { id: 'overview', label: 'Overview & Telemetry', icon: TrendingUp },
           { id: 'participants', label: `Participants (${totalRegistrations})`, icon: Users },
@@ -323,7 +323,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+              className={`px-3.5 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 min-h-[40px] ${
                 isActive
                   ? 'bg-slate-900 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -340,7 +340,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {activeTab === 'overview' && (
         <div className="space-y-8">
           {/* Key Metric Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Total Registrations
@@ -572,70 +572,160 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
-          {/* Participants Table */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider text-[10px]">
-                  <tr>
-                    <th className="py-3 px-4">Reg ID</th>
-                    <th className="py-3 px-4">Delegate Name</th>
-                    <th className="py-3 px-4">Class/Grade</th>
-                    <th className="py-3 px-4">Forum</th>
-                    <th className="py-3 px-4">DOB</th>
-                    <th className="py-3 px-4">PID & ID Proof</th>
-                    <th className="py-3 px-4">Payment</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredRegistrations.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-8 text-center text-slate-400">
-                        No participants match your filter criteria.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRegistrations.map((r) => (
-                      <tr key={r.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-indigo-700">
+          {/* Participants Display */}
+          <div className="space-y-4">
+            {/* MOBILE CARD VIEW (< md screens) */}
+            <div className="block md:hidden space-y-3">
+              {filteredRegistrations.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+                  No participants match your filter criteria.
+                </div>
+              ) : (
+                filteredRegistrations.map((r) => (
+                  <div
+                    key={r.id}
+                    className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
                           {r.registration_number}
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="font-bold text-slate-900">{r.full_name}</p>
-                          <p className="text-[10px] text-slate-400">{r.email}</p>
-                        </td>
-                        <td className="py-3 px-4">{r.class_grade}</td>
-                        <td className="py-3 px-4 font-semibold text-slate-800">{r.forum_name}</td>
-                        <td className="py-3 px-4 font-mono">{r.date_of_birth}</td>
-                        <td className="py-3 px-4 font-mono text-[11px]">
-                          <p className="text-slate-900">{r.participant_id_number}</p>
-                          <p className="text-slate-400 text-[10px]">{r.masked_id_value}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                              r.payment_status === 'verified' || r.payment_status === 'free'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-purple-100 text-purple-800'
-                            }`}
-                          >
-                            {r.payment_status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => setSelectedParticipant(r)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px]"
-                          >
-                            Inspect
-                          </button>
+                        </span>
+                        <h3 className="font-extrabold text-sm text-slate-900 mt-1">
+                          {r.full_name}
+                        </h3>
+                        <p className="text-[11px] text-slate-500">{r.email}</p>
+                      </div>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                          r.payment_status === 'verified' || r.payment_status === 'free'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}
+                      >
+                        {r.payment_status.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-xl p-3 text-xs space-y-1.5 text-slate-600">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Forum:</span>
+                        <span className="font-semibold text-slate-800">{r.forum_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Class/Grade:</span>
+                        <span className="font-semibold text-slate-800">{r.class_grade}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">DOB:</span>
+                        <span className="font-mono font-semibold text-slate-800">{r.date_of_birth}</span>
+                      </div>
+                      <div className="flex justify-between pt-1 border-t border-slate-200">
+                        <span className="text-slate-500">PID (12-Digit):</span>
+                        <span className="font-mono text-slate-800">{r.participant_id_number}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">ID Proof:</span>
+                        <span className="font-mono text-slate-700">{r.masked_id_value}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => setSelectedParticipant(r)}
+                        className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
+                      >
+                        <Eye className="w-4 h-4 text-slate-600" />
+                        <span>Inspect</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const forum = dataService.getForumById(r.forum_id);
+                          if (forum) {
+                            downloadInvitationPdf({
+                              registration: r,
+                              forum,
+                              eventInfo,
+                              template: dataService.getTemplateForForum(forum.id),
+                            });
+                          }
+                        }}
+                        className="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px] shadow-xs"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>PDF</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* DESKTOP TABLE VIEW (>= md screens) */}
+            <div className="hidden md:block bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="py-3 px-4">Reg ID</th>
+                      <th className="py-3 px-4">Delegate Name</th>
+                      <th className="py-3 px-4">Class/Grade</th>
+                      <th className="py-3 px-4">Forum</th>
+                      <th className="py-3 px-4">DOB</th>
+                      <th className="py-3 px-4">PID & ID Proof</th>
+                      <th className="py-3 px-4">Payment</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {filteredRegistrations.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400">
+                          No participants match your filter criteria.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      filteredRegistrations.map((r) => (
+                        <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="py-3 px-4 font-mono font-bold text-indigo-700">
+                            {r.registration_number}
+                          </td>
+                          <td className="py-3 px-4">
+                            <p className="font-bold text-slate-900">{r.full_name}</p>
+                            <p className="text-[10px] text-slate-400">{r.email}</p>
+                          </td>
+                          <td className="py-3 px-4">{r.class_grade}</td>
+                          <td className="py-3 px-4 font-semibold text-slate-800">{r.forum_name}</td>
+                          <td className="py-3 px-4 font-mono">{r.date_of_birth}</td>
+                          <td className="py-3 px-4 font-mono text-[11px]">
+                            <p className="text-slate-900">{r.participant_id_number}</p>
+                            <p className="text-slate-400 text-[10px]">{r.masked_id_value}</p>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                r.payment_status === 'verified' || r.payment_status === 'free'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-purple-100 text-purple-800'
+                              }`}
+                            >
+                              {r.payment_status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={() => setSelectedParticipant(r)}
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px]"
+                            >
+                              Inspect
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -1499,82 +1589,170 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </button>
           </div>
 
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider text-[10px]">
-                  <tr>
-                    <th className="py-3 px-4">Reg ID</th>
-                    <th className="py-3 px-4">Delegate Name</th>
-                    <th className="py-3 px-4">Forum Category</th>
-                    <th className="py-3 px-4">Amount</th>
-                    <th className="py-3 px-4">UTR Reference</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Verification Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {payments.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-400">
-                        No payments recorded yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    payments.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-indigo-700">
+          {/* Payments Display */}
+          <div className="space-y-4">
+            {/* MOBILE CARD VIEW (< md screens) */}
+            <div className="block md:hidden space-y-3">
+              {payments.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+                  No payments recorded yet.
+                </div>
+              ) : (
+                payments.map((p) => (
+                  <div
+                    key={p.id}
+                    className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
                           {p.registration_number}
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="font-bold text-slate-900">{p.user_name}</p>
-                          <p className="text-[10px] text-slate-400">{p.user_email}</p>
-                        </td>
-                        <td className="py-3 px-4 font-semibold text-slate-800">{p.forum_name}</td>
-                        <td className="py-3 px-4 font-bold text-slate-900">
-                          INR {Number(p.amount).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-4 font-mono text-purple-700">{p.transaction_ref}</td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                              p.status === 'verified'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : p.status === 'rejected'
-                                ? 'bg-rose-100 text-rose-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {p.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          {p.status === 'pending_verification' ? (
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={() => handleVerifyPayment(p.id, 'verified')}
-                                className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-xs"
-                              >
-                                Verify Payment
-                              </button>
-                              <button
-                                onClick={() => handleVerifyPayment(p.id, 'rejected')}
-                                className="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-[11px]"
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-[11px] text-slate-400">
-                              Verified by {p.verified_by || 'Admin'}
-                            </span>
-                          )}
+                        </span>
+                        <h3 className="font-extrabold text-sm text-slate-900 mt-1">
+                          {p.user_name}
+                        </h3>
+                        <p className="text-[11px] text-slate-500">{p.user_email}</p>
+                      </div>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                          p.status === 'verified'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : p.status === 'rejected'
+                            ? 'bg-rose-100 text-rose-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {p.status.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-xl p-3 text-xs space-y-1.5 text-slate-600">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Forum:</span>
+                        <span className="font-semibold text-slate-800">{p.forum_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Amount Due:</span>
+                        <span className="font-bold text-slate-900">INR {Number(p.amount).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between pt-1 border-t border-slate-200">
+                        <span className="text-slate-500">UTR Reference:</span>
+                        <span className="font-mono font-bold text-purple-700">{p.transaction_ref}</span>
+                      </div>
+                      {p.verified_by && (
+                        <div className="flex justify-between text-[11px] text-slate-400">
+                          <span>Verified by:</span>
+                          <span>{p.verified_by}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action buttons on mobile */}
+                    {p.status === 'pending_verification' ? (
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          onClick={() => handleVerifyPayment(p.id, 'verified')}
+                          className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-xs min-h-[44px]"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Verify Payment</span>
+                        </button>
+                        <button
+                          onClick={() => handleVerifyPayment(p.id, 'rejected')}
+                          className="py-2.5 px-3 bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 min-h-[44px]"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span>Reject</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-slate-400 text-right pt-1">
+                        Status verified by Secretariat
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* DESKTOP TABLE VIEW (>= md screens) */}
+            <div className="hidden md:block bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="py-3 px-4">Reg ID</th>
+                      <th className="py-3 px-4">Delegate Name</th>
+                      <th className="py-3 px-4">Forum Category</th>
+                      <th className="py-3 px-4">Amount</th>
+                      <th className="py-3 px-4">UTR Reference</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Verification Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {payments.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-slate-400">
+                          No payments recorded yet.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      payments.map((p) => (
+                        <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="py-3 px-4 font-mono font-bold text-indigo-700">
+                            {p.registration_number}
+                          </td>
+                          <td className="py-3 px-4">
+                            <p className="font-bold text-slate-900">{p.user_name}</p>
+                            <p className="text-[10px] text-slate-400">{p.user_email}</p>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-800">{p.forum_name}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">
+                            INR {Number(p.amount).toFixed(2)}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-purple-700">{p.transaction_ref}</td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                p.status === 'verified'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : p.status === 'rejected'
+                                  ? 'bg-rose-100 text-rose-800'
+                                  : 'bg-amber-100 text-amber-800'
+                              }`}
+                            >
+                              {p.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {p.status === 'pending_verification' ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => handleVerifyPayment(p.id, 'verified')}
+                                  className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-xs"
+                                >
+                                  Verify Payment
+                                </button>
+                                <button
+                                  onClick={() => handleVerifyPayment(p.id, 'rejected')}
+                                  className="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-[11px]"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400">
+                                Verified by {p.verified_by || 'Admin'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

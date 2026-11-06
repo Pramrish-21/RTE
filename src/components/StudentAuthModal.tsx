@@ -132,17 +132,17 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-indigo-900 to-indigo-700 text-white flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-indigo-900 to-indigo-700 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
               <GraduationCap className="w-5 h-5 text-indigo-200" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">Student Portal</h3>
-              <p className="text-xs text-indigo-200">
+              <h3 className="text-base sm:text-lg font-bold leading-tight">Student Portal</h3>
+              <p className="text-[11px] sm:text-xs text-indigo-200">
                 {mode === 'login'
                   ? 'Access your registrations, pass & forum records'
                   : mode === 'register'
@@ -153,21 +153,21 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-indigo-200 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-xl text-indigo-200 hover:text-white hover:bg-white/10 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex border-b border-slate-200 bg-slate-50">
+        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">
           <button
             onClick={() => {
               setMode('login');
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className={`flex-1 py-3 text-xs font-bold transition-colors ${
+            className={`flex-1 py-3 text-xs font-bold transition-colors min-h-[44px] ${
               mode === 'login'
                 ? 'border-b-2 border-indigo-600 text-indigo-700 bg-white'
                 : 'text-slate-500 hover:text-slate-800'
@@ -181,7 +181,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className={`flex-1 py-3 text-xs font-bold transition-colors ${
+            className={`flex-1 py-3 text-xs font-bold transition-colors min-h-[44px] ${
               mode === 'register'
                 ? 'border-b-2 border-indigo-600 text-indigo-700 bg-white'
                 : 'text-slate-500 hover:text-slate-800'
@@ -192,7 +192,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <div className="p-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {errorMsg && (
             <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-semibold leading-relaxed">
               {errorMsg}

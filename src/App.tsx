@@ -185,7 +185,7 @@ export default function App() {
       )}
 
       {/* Main View Router */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         {currentView === 'home' && (
           <HomeView
             onOpenRegisterModal={handleOpenRegisterModal}

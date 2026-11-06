@@ -66,24 +66,24 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0">
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">Supabase PostgreSQL Integration</h3>
-              <p className="text-xs text-indigo-200">
+              <h3 className="text-sm sm:text-lg font-bold leading-tight">Supabase PostgreSQL Integration</h3>
+              <p className="text-[11px] sm:text-xs text-indigo-200">
                 REGISTER TO EVENT (RTE) Central Database & Auth Configuration
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -91,7 +91,7 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
 
         {/* Status Bar */}
         <div
-          className={`px-6 py-3 flex items-center justify-between text-xs font-semibold border-b ${
+          className={`px-4 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-semibold border-b shrink-0 ${
             dataService.isConnectedToSupabase
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
               : 'bg-amber-50 text-amber-800 border-amber-200'
@@ -99,13 +99,13 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
         >
           <div className="flex items-center gap-2">
             <span
-              className={`w-2.5 h-2.5 rounded-full ${
+              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                 dataService.isConnectedToSupabase
                   ? 'bg-emerald-500 animate-pulse'
                   : 'bg-amber-500'
               }`}
             />
-            <span>
+            <span className="leading-tight">
               {dataService.isConnectedToSupabase
                 ? 'Status: Connected to Live Supabase'
                 : 'Status: Supabase Not Connected (Operating in Interactive Sandbox Mode)'}
@@ -117,17 +117,17 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
               await dataService.checkConnection();
               setTesting(false);
             }}
-            className="flex items-center gap-1 underline hover:opacity-80"
+            className="flex items-center gap-1 underline hover:opacity-80 self-start sm:self-auto shrink-0"
           >
             <RefreshCw className={`w-3 h-3 ${testing ? 'animate-spin' : ''}`} /> Re-check
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 bg-slate-50 px-6">
+        <div className="flex border-b border-slate-200 bg-slate-50 px-4 sm:px-6 overflow-x-auto no-scrollbar touch-pan-x shrink-0">
           <button
             onClick={() => setActiveTab('instructions')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition-colors ${
+            className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-colors shrink-0 whitespace-nowrap min-h-[44px] ${
               activeTab === 'instructions'
                 ? 'border-indigo-600 text-indigo-700 bg-white'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
@@ -137,7 +137,7 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('sql')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition-colors ${
+            className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-colors shrink-0 whitespace-nowrap min-h-[44px] ${
               activeTab === 'sql'
                 ? 'border-indigo-600 text-indigo-700 bg-white'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
@@ -147,7 +147,7 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('credentials')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition-colors ${
+            className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 transition-colors shrink-0 whitespace-nowrap min-h-[44px] ${
               activeTab === 'credentials'
                 ? 'border-indigo-600 text-indigo-700 bg-white'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
@@ -158,7 +158,7 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {activeTab === 'instructions' && (
             <div className="space-y-5 text-sm">
               <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100">
@@ -250,7 +250,7 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
                 </button>
               </div>
 
-              <pre className="p-4 bg-slate-950 text-slate-200 rounded-2xl text-[11px] font-mono leading-relaxed max-h-96 overflow-y-auto border border-slate-800">
+              <pre className="p-3 sm:p-4 bg-slate-950 text-slate-200 rounded-2xl text-[10px] sm:text-[11px] font-mono leading-relaxed max-h-80 sm:max-h-96 overflow-x-auto overflow-y-auto max-w-full border border-slate-800">
                 {SUPABASE_COMPLETE_SQL_SCHEMA}
               </pre>
             </div>
