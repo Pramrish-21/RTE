@@ -1,0 +1,6 @@
+{
+  "name": "REGISTER TO EVENT (RTE)",
+  "description": "Discover. Register. Participate. A professional event registration platform with Forum-wise participation, DOB eligibility verification, and instant invitation PDF generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
