@@ -69,6 +69,20 @@ class DataService {
   public connectionStatusMessage: string = 'Checking Supabase connection...';
 
   constructor() {
+    // Purge any legacy demo user from localStorage on startup
+    if (typeof window !== 'undefined') {
+      const stored = loadFromStorage<Profile | null>(KEY_CURRENT_USER, null);
+      if (
+        stored &&
+        (stored.email === 'student@example.com' ||
+          stored.id === 'usr-student-demo-01' ||
+          stored.id === 'usr-admin-demo-01' ||
+          stored.full_name?.includes('Mukherjee') ||
+          stored.full_name === 'Aarav Sharma')
+      ) {
+        saveToStorage(KEY_CURRENT_USER, null);
+      }
+    }
     this.checkConnection();
   }
 
@@ -100,7 +114,7 @@ class DataService {
   // ==========================================
 
   public getCurrentUser(): Profile | null {
-    return loadFromStorage<Profile | null>(KEY_CURRENT_USER, INITIAL_DEMO_STUDENT);
+    return loadFromStorage<Profile | null>(KEY_CURRENT_USER, null);
   }
 
   public setCurrentUser(user: Profile | null): void {
@@ -228,36 +242,43 @@ class DataService {
           return { success: false, error: authError.message };
         }
 
-        // Fetch profile
+        // Verify account is not an admin attempting to use student portal
+        const { data: adminCheck } = await client
+          .from('admin_roles')
+          .select('role')
+          .eq('user_id', authData.user.id)
+          .maybeSingle();
+
+        if (adminCheck && ['admin', 'main_admin'].includes(adminCheck.role)) {
+          await client.auth.signOut();
+          return {
+            success: false,
+            error:
+              'This account is registered with Administrative privileges. Please use the Admin Login portal at /login/admin.',
+          };
+        }
+
+        // Fetch user profile from database
         const { data: profileData, error: profileErr } = await client
           .from('profiles')
           .select('*')
           .eq('id', authData.user.id)
-          .single();
+          .maybeSingle();
 
-        if (profileErr || !profileData) {
-          // Construct minimal profile
-          const p: Profile = {
-            id: authData.user.id,
-            email: cleanEmail,
-            full_name: authData.user.user_metadata?.full_name || 'Student Delegate',
-            class_grade: 'Senior Secondary',
-            contact_number: '',
-            participant_id_number: '123456789012',
-            date_of_birth: '2008-01-01',
-            masked_id_type: 'school_id',
-            masked_id_value: 'SCH-VERIFIED',
-            role: 'student',
-            created_at: new Date().toISOString(),
-          };
-          this.setCurrentUser(p);
-          return { success: true, user: p };
-        }
-
-        const profile: Profile = {
-          ...profileData,
+        const profile: Profile = profileData || {
+          id: authData.user.id,
+          email: cleanEmail,
+          full_name: authData.user.user_metadata?.full_name || 'Student Delegate',
+          class_grade: authData.user.user_metadata?.class_grade || 'Delegate',
+          contact_number: authData.user.user_metadata?.contact_number || '',
+          participant_id_number: authData.user.user_metadata?.participant_id_number || '000000000000',
+          date_of_birth: authData.user.user_metadata?.date_of_birth || '2008-01-01',
+          masked_id_type: 'school_id',
+          masked_id_value: 'SCH-VERIFIED',
           role: 'student',
+          created_at: new Date().toISOString(),
         };
+
         this.setCurrentUser(profile);
         return { success: true, user: profile };
       } catch (err: unknown) {
@@ -265,8 +286,8 @@ class DataService {
       }
     }
 
-    // Local mode check
-    const profiles = loadFromStorage<Profile[]>(KEY_PROFILES, [INITIAL_DEMO_STUDENT, INITIAL_DEMO_ADMIN]);
+    // Local sandbox mode check: only allow real created accounts, no automatic demo fallback
+    const profiles = loadFromStorage<Profile[]>(KEY_PROFILES, []);
     const found = profiles.find((p) => p.email.toLowerCase() === cleanEmail && p.role === 'student');
 
     if (found) {
@@ -274,15 +295,9 @@ class DataService {
       return { success: true, user: found };
     }
 
-    // Allow default demo student login
-    if (cleanEmail === 'student@example.com') {
-      this.setCurrentUser(INITIAL_DEMO_STUDENT);
-      return { success: true, user: INITIAL_DEMO_STUDENT };
-    }
-
     return {
       success: false,
-      error: 'Invalid student credentials or student account not found. Please register first.',
+      error: 'Invalid student credentials or student account not found. Please create an account first.',
     };
   }
 
@@ -314,7 +329,8 @@ class DataService {
           await client.auth.signOut();
           return {
             success: false,
-            error: 'Access Denied: This account is not an authorized administrator. Administrative permissions must be granted by the Main Administrator.',
+            error:
+              'Access Denied: This account is not an authorized administrator. Administrative permissions must be explicitly authorized by the Main Administrator in the Supabase admin_roles table.',
           };
         }
 
@@ -341,29 +357,22 @@ class DataService {
 
     // Local mode verification: check admin email whitelist
     if (
+      cleanEmail === 'pramrish299@gmail.com' ||
       cleanEmail === 'admin@registertoevent.org' ||
-      cleanEmail === 'admin@rte.org' ||
-      cleanEmail === 'pramrish299@gmail.com'
+      cleanEmail === 'admin@rte.org'
     ) {
       const adminProfile: Profile = {
-        ...INITIAL_DEMO_ADMIN,
+        id: `usr-admin-${Date.now()}`,
         email: cleanEmail,
+        full_name: cleanEmail === 'pramrish299@gmail.com' ? 'Main Administrator' : 'Executive Administrator',
+        class_grade: 'Admin Directorate',
+        contact_number: '',
+        participant_id_number: '000000000000',
+        date_of_birth: '1980-01-01',
+        masked_id_type: 'school_id',
+        masked_id_value: 'ADMIN-AUTH',
         role: 'main_admin',
-      };
-      this.setCurrentUser(adminProfile);
-      return { success: true, user: adminProfile };
-    }
-
-    // Check if dynamically added admin in local storage
-    const customAdmins = loadFromStorage<string[]>('rte_authorized_admin_emails', [
-      'admin@registertoevent.org',
-      'secretariat@registertoevent.org',
-    ]);
-    if (customAdmins.some((e) => e.toLowerCase() === cleanEmail)) {
-      const adminProfile: Profile = {
-        ...INITIAL_DEMO_ADMIN,
-        email: cleanEmail,
-        role: 'admin',
+        created_at: new Date().toISOString(),
       };
       this.setCurrentUser(adminProfile);
       return { success: true, user: adminProfile };
@@ -371,8 +380,95 @@ class DataService {
 
     return {
       success: false,
-      error: 'Access Denied: This email address is not registered in the trusted admin_roles directory. Unauthorized admin access is strictly blocked.',
+      error:
+        'Access Denied: This email address is not registered in the trusted admin_roles directory. Unauthorized admin access is strictly blocked.',
     };
+  }
+
+  /**
+   * Real Supabase password reset workflow
+   */
+  public async resetPasswordForEmail(email: string): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      return {
+        success: false,
+        error:
+          'Supabase is not configured. Please connect your live Supabase project (Project URL & Anon Key) in Database & RLS Settings to enable real password recovery emails.',
+      };
+    }
+
+    const redirectUrl = `${window.location.origin}/reset-password`;
+
+    try {
+      const { error } = await client.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        // Handle Supabase default email rate limit
+        if (error.status === 429 || error.message.toLowerCase().includes('rate limit')) {
+          return {
+            success: false,
+            error: `Supabase Rate Limit Reached: ${error.message}. By default, Supabase's built-in email service limits password recovery emails to 3-4 per hour. To remove this limit, configure custom SMTP in Supabase Dashboard -> Project Settings -> Authentication -> SMTP Settings.`,
+          };
+        }
+        return { success: false, error: error.message };
+      }
+
+      return {
+        success: true,
+        message: `A password reset link has been dispatched to ${cleanEmail}. Check your email inbox and click the link to set your new password. The link will redirect you to ${redirectUrl}.`,
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+  }
+
+  /**
+   * Update password for an active recovery session
+   */
+  public async updateUserPassword(newPassword: string): Promise<{ success: boolean; error?: string }> {
+    if (!newPassword || newPassword.length < 6) {
+      return { success: false, error: 'Password must be at least 6 characters long.' };
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      return {
+        success: false,
+        error: 'Supabase client is not connected. Connect your database to update credentials.',
+      };
+    }
+
+    try {
+      const { error } = await client.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
   }
 
   public logout(): void {
@@ -562,7 +658,7 @@ class DataService {
       ],
       contact_phone: '+91 657 243 1900',
       contact_email: 'invitations@registertoevent.org',
-      signatory_name: 'Dr. S. Mukherjee',
+      signatory_name: 'Director General, RTE Secretariat',
       signatory_designation: 'Secretary General, RTE National Committee',
     };
   }
@@ -586,7 +682,7 @@ class DataService {
         ],
         contact_phone: '+91 657 243 1900',
         contact_email: 'secretariat@registertoevent.org',
-        signatory_name: 'Dr. S. Mukherjee',
+        signatory_name: 'Director General, RTE Secretariat',
         signatory_designation: 'Secretary General, RTE National Committee',
       };
       templates.push(newTpl);

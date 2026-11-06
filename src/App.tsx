@@ -1,26 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar.tsx';
 import { HomeView } from './components/HomeView.tsx';
+import { LoginSelectionView } from './components/LoginSelectionView.tsx';
+import { StudentLoginView } from './components/StudentLoginView.tsx';
+import { AdminLoginView } from './components/AdminLoginView.tsx';
+import { StudentSignupView } from './components/StudentSignupView.tsx';
+import { ForgotPasswordView } from './components/ForgotPasswordView.tsx';
+import { ResetPasswordView } from './components/ResetPasswordView.tsx';
 import { StudentDashboardView } from './components/StudentDashboardView.tsx';
 import { AdminDashboardView } from './components/AdminDashboardView.tsx';
 import { PublicVerificationView } from './components/PublicVerificationView.tsx';
-import { StudentAuthModal } from './components/StudentAuthModal.tsx';
-import { AdminAuthModal } from './components/AdminAuthModal.tsx';
 import { StudentRegistrationModal } from './components/StudentRegistrationModal.tsx';
 import { SupabaseSetupModal } from './components/SupabaseSetupModal.tsx';
 import { dataService } from './lib/dataService.ts';
 import type { Profile, Forum, Registration } from './types/index.ts';
-import { AlertTriangle, Database, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Database, ShieldAlert } from 'lucide-react';
+
+export type AppView =
+  | 'selection'
+  | 'login_student'
+  | 'login_admin'
+  | 'signup'
+  | 'forgot_password'
+  | 'reset_password'
+  | 'student'
+  | 'admin'
+  | 'verify'
+  | 'forums';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<Profile | null>(() => dataService.getCurrentUser());
-  const [currentView, setCurrentView] = useState<'home' | 'student' | 'admin' | 'verify'>('home');
+  const [currentView, setCurrentView] = useState<AppView>('selection');
   const [verifyRegId, setVerifyRegId] = useState<string | undefined>(undefined);
 
   // Modals
-  const [studentAuthOpen, setStudentAuthOpen] = useState(false);
-  const [studentAuthInitialMode, setStudentAuthInitialMode] = useState<'login' | 'register'>('login');
-  const [adminAuthOpen, setAdminAuthOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [registerModalForum, setRegisterModalForum] = useState<Forum | null>(null);
   const [supabaseModalOpen, setSupabaseModalOpen] = useState(false);
@@ -39,6 +52,7 @@ export default function App() {
     const handleLocationChange = () => {
       const path = window.location.pathname;
       const search = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
       const regId = search.get('regId');
 
       if (regId) {
@@ -47,18 +61,35 @@ export default function App() {
         return;
       }
 
+      // Check for Supabase Auth recovery token in URL hash (#access_token=...&type=recovery)
+      if (path === '/reset-password' || hash.includes('type=recovery') || hash.includes('access_token=')) {
+        setCurrentView('reset_password');
+        return;
+      }
+
       if (path === '/login/student') {
-        setStudentAuthInitialMode('login');
-        setStudentAuthOpen(true);
-      } else if (path === '/register/student' || path === '/register') {
-        setStudentAuthInitialMode('register');
-        setStudentAuthOpen(true);
+        setCurrentView('login_student');
       } else if (path === '/login/admin') {
-        setAdminAuthOpen(true);
-      } else if (path === '/student/dashboard') {
-        setCurrentView('student');
-      } else if (path === '/admin/dashboard') {
-        // Enforce admin permission
+        setCurrentView('login_admin');
+      } else if (path === '/signup' || path === '/register' || path === '/register/student') {
+        setCurrentView('signup');
+      } else if (path === '/forgot-password') {
+        setCurrentView('forgot_password');
+      } else if (path === '/forums') {
+        setCurrentView('forums');
+      } else if (path === '/verify') {
+        setCurrentView('verify');
+      } else if (path === '/student/dashboard' || path.startsWith('/student')) {
+        const user = dataService.getCurrentUser();
+        if (user && user.role === 'student') {
+          setCurrentView('student');
+        } else {
+          // Redirect unauthenticated to student login
+          window.history.replaceState({}, '', '/login/student');
+          setCurrentView('login_student');
+        }
+      } else if (path === '/admin/dashboard' || path.startsWith('/admin')) {
+        // Enforce verified admin permission
         const user = dataService.getCurrentUser();
         if (user && ['admin', 'main_admin'].includes(user.role)) {
           setCurrentView('admin');
@@ -66,13 +97,12 @@ export default function App() {
           setUnauthorizedAdminNotice(
             'Access to /admin/dashboard was denied. You must authenticate with an authorized administrative account.'
           );
-          setAdminAuthOpen(true);
-          setCurrentView('home');
+          window.history.replaceState({}, '', '/login/admin');
+          setCurrentView('login_admin');
         }
-      } else if (path === '/verify') {
-        setCurrentView('verify');
       } else {
-        setCurrentView('home');
+        // Default landing page is ALWAYS the Login Selection Page
+        setCurrentView('selection');
       }
     };
 
@@ -81,30 +111,58 @@ export default function App() {
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
-  const navigateTo = (view: 'home' | 'student' | 'admin' | 'verify') => {
+  const navigateTo = (view: AppView) => {
     setUnauthorizedAdminNotice(null);
     let targetPath = '/';
     const user = dataService.getCurrentUser();
 
-    if (view === 'student') {
-      if (!user) {
-        setStudentAuthInitialMode('login');
-        setStudentAuthOpen(true);
-        return;
-      }
-      targetPath = '/student/dashboard';
-    } else if (view === 'admin') {
-      if (!user || !['admin', 'main_admin'].includes(user.role)) {
-        setAdminAuthOpen(true);
-        return;
-      }
-      targetPath = '/admin/dashboard';
-    } else if (view === 'verify') {
-      targetPath = '/verify';
+    switch (view) {
+      case 'selection':
+        targetPath = '/';
+        break;
+      case 'login_student':
+        targetPath = '/login/student';
+        break;
+      case 'login_admin':
+        targetPath = '/login/admin';
+        break;
+      case 'signup':
+        targetPath = '/signup';
+        break;
+      case 'forgot_password':
+        targetPath = '/forgot-password';
+        break;
+      case 'reset_password':
+        targetPath = '/reset-password';
+        break;
+      case 'student':
+        if (!user || user.role !== 'student') {
+          targetPath = '/login/student';
+          view = 'login_student';
+        } else {
+          targetPath = '/student/dashboard';
+        }
+        break;
+      case 'admin':
+        if (!user || !['admin', 'main_admin'].includes(user.role)) {
+          setUnauthorizedAdminNotice('Authorized administrative credentials required.');
+          targetPath = '/login/admin';
+          view = 'login_admin';
+        } else {
+          targetPath = '/admin/dashboard';
+        }
+        break;
+      case 'verify':
+        targetPath = '/verify';
+        break;
+      case 'forums':
+        targetPath = '/forums';
+        break;
     }
 
     window.history.pushState({}, '', targetPath);
     setCurrentView(view);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenRegisterModal = (forum?: Forum) => {
@@ -113,17 +171,21 @@ export default function App() {
   };
 
   const handleStudentAuthSuccess = () => {
-    setStudentAuthOpen(false);
     const user = dataService.getCurrentUser();
     setCurrentUser(user);
     navigateTo('student');
   };
 
   const handleAdminAuthSuccess = () => {
-    setAdminAuthOpen(false);
     const user = dataService.getCurrentUser();
     setCurrentUser(user);
     navigateTo('admin');
+  };
+
+  const handleLogout = async () => {
+    await dataService.logout();
+    setCurrentUser(null);
+    navigateTo('selection');
   };
 
   return (
@@ -155,15 +217,11 @@ export default function App() {
       <Navbar
         currentUser={currentUser}
         currentView={currentView}
-        onOpenStudentLogin={() => {
-          setStudentAuthInitialMode('login');
-          setStudentAuthOpen(true);
-        }}
-        onOpenAdminLogin={() => {
-          setAdminAuthOpen(true);
-        }}
+        onOpenStudentLogin={() => navigateTo('login_student')}
+        onOpenAdminLogin={() => navigateTo('login_admin')}
         onOpenSupabaseModal={() => setSupabaseModalOpen(true)}
         onNavigate={navigateTo}
+        onLogout={handleLogout}
       />
 
       {/* Unauthorized Admin Access Notice */}
@@ -186,22 +244,69 @@ export default function App() {
 
       {/* Main View Router */}
       <main className="flex-1 pb-20 md:pb-0">
-        {currentView === 'home' && (
-          <HomeView
-            onOpenRegisterModal={handleOpenRegisterModal}
-            onOpenStudentLogin={() => {
-              setStudentAuthInitialMode('login');
-              setStudentAuthOpen(true);
-            }}
-            onOpenAdminLogin={() => {
-              setAdminAuthOpen(true);
-            }}
-            onNavigateVerify={() => navigateTo('verify')}
+        {/* 1. DEFAULT LANDING PAGE: Login Selection */}
+        {currentView === 'selection' && (
+          <LoginSelectionView
+            onSelectStudentLogin={() => navigateTo('login_student')}
+            onSelectAdminLogin={() => navigateTo('login_admin')}
+            onSelectSignup={() => navigateTo('signup')}
+            onSelectVerify={() => navigateTo('verify')}
+            onSelectBrowseForums={() => navigateTo('forums')}
+            onOpenSupabaseModal={() => setSupabaseModalOpen(true)}
           />
         )}
 
+        {/* 2. STUDENT LOGIN */}
+        {currentView === 'login_student' && (
+          <StudentLoginView
+            onSuccess={handleStudentAuthSuccess}
+            onNavigateSignup={() => navigateTo('signup')}
+            onNavigateForgotPassword={() => navigateTo('forgot_password')}
+            onNavigateHome={() => navigateTo('selection')}
+          />
+        )}
+
+        {/* 3. ADMIN LOGIN */}
+        {currentView === 'login_admin' && (
+          <AdminLoginView
+            onSuccess={handleAdminAuthSuccess}
+            onNavigateForgotPassword={() => navigateTo('forgot_password')}
+            onNavigateHome={() => navigateTo('selection')}
+            onOpenSupabaseModal={() => setSupabaseModalOpen(true)}
+          />
+        )}
+
+        {/* 4. STUDENT SIGNUP */}
+        {currentView === 'signup' && (
+          <StudentSignupView
+            onSuccess={handleStudentAuthSuccess}
+            onNavigateLogin={() => navigateTo('login_student')}
+            onNavigateHome={() => navigateTo('selection')}
+          />
+        )}
+
+        {/* 5. FORGOT PASSWORD */}
+        {currentView === 'forgot_password' && (
+          <ForgotPasswordView
+            onNavigateStudentLogin={() => navigateTo('login_student')}
+            onNavigateAdminLogin={() => navigateTo('login_admin')}
+            onNavigateHome={() => navigateTo('selection')}
+            onOpenSupabaseModal={() => setSupabaseModalOpen(true)}
+          />
+        )}
+
+        {/* 6. SET NEW PASSWORD */}
+        {currentView === 'reset_password' && (
+          <ResetPasswordView
+            onNavigateStudentLogin={() => navigateTo('login_student')}
+            onNavigateAdminLogin={() => navigateTo('login_admin')}
+            onNavigateHome={() => navigateTo('selection')}
+          />
+        )}
+
+        {/* 7. STUDENT DASHBOARD (PROTECTED) */}
         {currentView === 'student' && (
-          currentUser ? (
+          currentUser && currentUser.role === 'student' ? (
             <StudentDashboardView
               currentUser={currentUser}
               onOpenRegisterModal={handleOpenRegisterModal}
@@ -213,18 +318,16 @@ export default function App() {
                 Please sign in to view your registrations and download official invitation passes.
               </p>
               <button
-                onClick={() => {
-                  setStudentAuthInitialMode('login');
-                  setStudentAuthOpen(true);
-                }}
+                onClick={() => navigateTo('login_student')}
                 className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md"
               >
-                Sign In Now
+                Sign In to Student Portal
               </button>
             </div>
           )
         )}
 
+        {/* 8. ADMIN DASHBOARD (PROTECTED) */}
         {currentView === 'admin' && (
           currentUser && ['admin', 'main_admin'].includes(currentUser.role) ? (
             <AdminDashboardView
@@ -238,7 +341,7 @@ export default function App() {
                 You must authenticate with an authorized administrative account to access this section.
               </p>
               <button
-                onClick={() => setAdminAuthOpen(true)}
+                onClick={() => navigateTo('login_admin')}
                 className="px-6 py-2.5 bg-slate-900 hover:bg-purple-900 text-white rounded-xl text-xs font-bold shadow-md"
               >
                 Admin Sign-In
@@ -247,36 +350,33 @@ export default function App() {
           )
         )}
 
+        {/* 9. PUBLIC FORUMS CATALOG */}
+        {currentView === 'forums' && (
+          <HomeView
+            onOpenRegisterModal={handleOpenRegisterModal}
+            onOpenStudentLogin={() => navigateTo('login_student')}
+            onOpenAdminLogin={() => navigateTo('login_admin')}
+            onNavigateVerify={() => navigateTo('verify')}
+          />
+        )}
+
+        {/* 10. PUBLIC VERIFICATION */}
         {currentView === 'verify' && (
           <PublicVerificationView
             initialRegId={verifyRegId}
-            onNavigateHome={() => navigateTo('home')}
+            onNavigateHome={() => navigateTo('selection')}
           />
         )}
       </main>
 
       {/* Global Modals */}
-      <StudentAuthModal
-        isOpen={studentAuthOpen}
-        initialMode={studentAuthInitialMode}
-        onClose={() => setStudentAuthOpen(false)}
-        onSuccess={handleStudentAuthSuccess}
-      />
-
-      <AdminAuthModal
-        isOpen={adminAuthOpen}
-        onClose={() => setAdminAuthOpen(false)}
-        onSuccess={handleAdminAuthSuccess}
-        onOpenSupabaseSetup={() => setSupabaseModalOpen(true)}
-      />
-
       <StudentRegistrationModal
         isOpen={registerModalOpen}
         selectedForum={registerModalForum}
         currentUser={currentUser}
         onClose={() => setRegisterModalOpen(false)}
-        onSuccess={(newReg) => {
-          // Keep modal open on success screen so participant can download PDF or celebrate
+        onSuccess={(_newReg) => {
+          // Modal stays open to show ticket & download pass
         }}
       />
 

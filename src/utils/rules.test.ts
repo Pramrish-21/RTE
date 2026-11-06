@@ -122,10 +122,10 @@ test('checkDuplicateRegistration detects duplicate participant ID and email for 
       forum_id: 'forum-robotics',
       forum_name: 'STEM & Robotics Conclave',
       user_id: 'user-1',
-      full_name: 'Aarav Sharma',
+      full_name: 'Test Delegate',
       class_grade: 'Class 11',
       contact_number: '9876543210',
-      email: 'aarav@example.com',
+      email: 'test.delegate@example.com',
       date_of_birth: '2008-04-10',
       participant_id_number: '123456789012',
       masked_id_type: 'masked_aadhaar',
@@ -149,7 +149,7 @@ test('checkDuplicateRegistration detects duplicate participant ID and email for 
     sampleRegistrations,
     'forum-robotics',
     '999999999999',
-    'aarav@example.com'
+    'test.delegate@example.com'
   );
   assert.equal(duplicateEmail.isDuplicate, true);
 
@@ -157,7 +157,7 @@ test('checkDuplicateRegistration detects duplicate participant ID and email for 
     sampleRegistrations,
     'forum-debate',
     '123456789012',
-    'aarav@example.com'
+    'test.delegate@example.com'
   );
   assert.equal(differentForum.isDuplicate, false);
 });

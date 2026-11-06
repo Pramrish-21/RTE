@@ -24,8 +24,8 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
   onSuccess,
   onOpenSupabaseSetup,
 }) => {
-  const [adminEmail, setAdminEmail] = useState('admin@registertoevent.org');
-  const [adminPassword, setAdminPassword] = useState('Admin@123');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showForgotNotice, setShowForgotNotice] = useState(false);

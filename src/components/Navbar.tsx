@@ -15,8 +15,10 @@ import {
   GraduationCap,
   Shield,
   CheckCircle2,
+  Layers,
 } from 'lucide-react';
 import type { Profile, InAppNotification } from '../types/index.ts';
+import type { AppView } from '../App.tsx';
 import { dataService } from '../lib/dataService.ts';
 
 interface NavbarProps {
@@ -24,8 +26,9 @@ interface NavbarProps {
   onOpenStudentLogin: () => void;
   onOpenAdminLogin: () => void;
   onOpenSupabaseModal: () => void;
-  onNavigate: (view: 'home' | 'student' | 'admin' | 'verify') => void;
-  currentView: string;
+  onNavigate: (view: AppView) => void;
+  onLogout?: () => void;
+  currentView: AppView;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -34,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAdminLogin,
   onOpenSupabaseModal,
   onNavigate,
+  onLogout,
   currentView,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,13 +46,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   const notifications = dataService.getNotifications(currentUser?.id);
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  const handleLogout = () => {
-    dataService.logout();
+  const handleLogout = async () => {
+    if (onLogout) {
+      await onLogout();
+    } else {
+      await dataService.logout();
+      onNavigate('selection');
+    }
     setMobileMenuOpen(false);
-    onNavigate('home');
   };
 
-  const handleNavClick = (view: 'home' | 'student' | 'admin' | 'verify') => {
+  const handleNavClick = (view: AppView) => {
     onNavigate(view);
     setMobileMenuOpen(false);
   };
@@ -60,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center justify-between h-14 sm:h-18">
             {/* Brand Logo & Tagline */}
             <button
-              onClick={() => handleNavClick('home')}
+              onClick={() => handleNavClick('selection')}
               className="flex items-center gap-2 sm:gap-3 text-left focus:outline-none group min-h-[44px]"
               aria-label="REGISTER TO EVENT Home"
             >
@@ -85,9 +93,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Center Navigation Links - Desktop Only */}
             <nav className="hidden md:flex items-center gap-1 lg:gap-2">
               <button
-                onClick={() => handleNavClick('home')}
+                onClick={() => handleNavClick('selection')}
                 className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
-                  currentView === 'home'
+                  currentView === 'selection'
+                    ? 'bg-slate-100 text-indigo-700 font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                Login Selection
+              </button>
+              <button
+                onClick={() => handleNavClick('forums')}
+                className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+                  currentView === 'forums'
                     ? 'bg-slate-100 text-indigo-700 font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
@@ -97,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => handleNavClick('student')}
                 className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
-                  currentView === 'student'
+                  currentView === 'student' || currentView === 'login_student' || currentView === 'signup'
                     ? 'bg-indigo-50 text-indigo-700 font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
@@ -107,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => handleNavClick('admin')}
                 className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
-                  currentView === 'admin'
+                  currentView === 'admin' || currentView === 'login_admin'
                     ? 'bg-purple-50 text-purple-700 font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
@@ -333,21 +351,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Navigation links */}
             <div className="space-y-1">
               <button
-                onClick={() => handleNavClick('home')}
+                onClick={() => handleNavClick('selection')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold min-h-[44px] ${
-                  currentView === 'home'
+                  currentView === 'selection'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <span>Login Selection (Home)</span>
+              </button>
+
+              <button
+                onClick={() => handleNavClick('forums')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold min-h-[44px] ${
+                  currentView === 'forums'
                     ? 'bg-slate-100 text-indigo-700'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <Home className="w-4 h-4 text-slate-400" />
+                <Layers className="w-4 h-4 text-slate-400" />
                 <span>Browse Forums Catalog</span>
               </button>
 
               <button
                 onClick={() => handleNavClick('student')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold min-h-[44px] ${
-                  currentView === 'student'
+                  currentView === 'student' || currentView === 'login_student' || currentView === 'signup'
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
@@ -359,7 +389,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => handleNavClick('admin')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold min-h-[44px] ${
-                  currentView === 'admin'
+                  currentView === 'admin' || currentView === 'login_admin'
                     ? 'bg-purple-50 text-purple-700'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
@@ -412,42 +442,56 @@ export const Navbar: React.FC<NavbarProps> = ({
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1 flex items-center justify-around shadow-lg"
       >
         <button
-          onClick={() => handleNavClick('home')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[64px] min-h-[48px] ${
-            currentView === 'home' ? 'text-indigo-600 font-bold' : 'text-slate-500'
+          onClick={() => handleNavClick('selection')}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl min-w-[56px] min-h-[48px] ${
+            currentView === 'selection' ? 'text-indigo-600 font-bold' : 'text-slate-500'
           }`}
         >
-          <Home className="w-5 h-5" />
+          <Home className="w-4 h-4" />
+          <span className="text-[10px] mt-0.5">Portal</span>
+        </button>
+
+        <button
+          onClick={() => handleNavClick('forums')}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl min-w-[56px] min-h-[48px] ${
+            currentView === 'forums' ? 'text-indigo-600 font-bold' : 'text-slate-500'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
           <span className="text-[10px] mt-0.5">Forums</span>
         </button>
 
         <button
           onClick={() => handleNavClick('student')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[64px] min-h-[48px] ${
-            currentView === 'student' ? 'text-indigo-600 font-bold' : 'text-slate-500'
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl min-w-[56px] min-h-[48px] ${
+            currentView === 'student' || currentView === 'login_student' || currentView === 'signup'
+              ? 'text-indigo-600 font-bold'
+              : 'text-slate-500'
           }`}
         >
-          <GraduationCap className="w-5 h-5" />
+          <GraduationCap className="w-4 h-4" />
           <span className="text-[10px] mt-0.5">Student</span>
         </button>
 
         <button
           onClick={() => handleNavClick('admin')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[64px] min-h-[48px] ${
-            currentView === 'admin' ? 'text-purple-700 font-bold' : 'text-slate-500'
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl min-w-[56px] min-h-[48px] ${
+            currentView === 'admin' || currentView === 'login_admin'
+              ? 'text-purple-700 font-bold'
+              : 'text-slate-500'
           }`}
         >
-          <Shield className="w-5 h-5" />
+          <Shield className="w-4 h-4" />
           <span className="text-[10px] mt-0.5">Admin</span>
         </button>
 
         <button
           onClick={() => handleNavClick('verify')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[64px] min-h-[48px] ${
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl min-w-[56px] min-h-[48px] ${
             currentView === 'verify' ? 'text-emerald-700 font-bold' : 'text-slate-500'
           }`}
         >
-          <CheckCircle2 className="w-5 h-5" />
+          <CheckCircle2 className="w-4 h-4" />
           <span className="text-[10px] mt-0.5">Verify</span>
         </button>
       </nav>

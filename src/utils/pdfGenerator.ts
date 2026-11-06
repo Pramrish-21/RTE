@@ -352,7 +352,7 @@ export async function generateInvitationPdf({
   doc.text(`Venue Address: ${eventInfo.venue}`, margin, currentY + 7.5);
 
   // Official Signature Right
-  const signatoryName = template?.signatory_name || 'Dr. S. Mukherjee';
+  const signatoryName = template?.signatory_name || 'Director General, RTE Secretariat';
   const signatoryTitle = template?.signatory_designation || 'Secretary General, RTE Committee';
 
   doc.setFont('helvetica', 'bold');

@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.forum_invitation_templates (
   terms_and_conditions TEXT[] NOT NULL DEFAULT '{}',
   contact_phone TEXT NOT NULL DEFAULT '+91 657 243 1900',
   contact_email TEXT NOT NULL DEFAULT 'invitations@registertoevent.org',
-  signatory_name TEXT NOT NULL DEFAULT 'Dr. S. Mukherjee',
+  signatory_name TEXT NOT NULL DEFAULT 'Director General, RTE Secretariat',
   signatory_designation TEXT NOT NULL DEFAULT 'Secretary General, RTE Committee',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(forum_id)
@@ -420,7 +420,7 @@ SELECT
   ],
   '+91 657 243 1900',
   'secretariat@registertoevent.org',
-  'Dr. S. Mukherjee',
+  'Director General, RTE Secretariat',
   'Secretary General, RTE National Committee'
 FROM public.forums
 ON CONFLICT (forum_id) DO NOTHING;

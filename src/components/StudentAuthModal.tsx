@@ -34,8 +34,8 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Login form state
-  const [loginEmail, setLoginEmail] = useState('student@example.com');
-  const [loginPassword, setLoginPassword] = useState('Student@123');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Forgot password
   const [forgotEmail, setForgotEmail] = useState('');
@@ -254,11 +254,6 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                 </div>
               </div>
 
-              {/* Demo credentials hint */}
-              <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl text-[11px] text-indigo-900">
-                <span className="font-bold">Demo Student Credentials:</span>{' '}
-                <code>student@example.com</code> / <code>Student@123</code>
-              </div>
 
               <button
                 type="submit"
